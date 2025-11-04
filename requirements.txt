@@ -4,3 +4,4 @@ yfinance
 altair
 datetime
 scipy
+numpy_financial
