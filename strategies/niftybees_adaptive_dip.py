@@ -2,9 +2,9 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import altair as alt
-from strategies.helpers import plot_portfolio_value_chart, calculate_xirr_from_data
-from strategies.helpers import plot_adaptive_portfolio_chart
-from strategies.helpers import calculate_xirr_from_data_v2
+from upcoming_strategies.helpers import plot_portfolio_value_chart, calculate_xirr_from_data
+from upcoming_strategies.helpers import plot_adaptive_portfolio_chart
+from upcoming_strategies.helpers import calculate_xirr_from_data_v2
 
 def run():
     st.header("📊 NiftyBees Adaptive Dip-Buy Strategy")
