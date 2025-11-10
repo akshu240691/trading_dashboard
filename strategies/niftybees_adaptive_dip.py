@@ -17,7 +17,61 @@ def run():
     # ----------------------------
     # Inputs
     # ----------------------------
-    ticker = "NIFTYBEES.NS"
+    # Nifty 50 ticker options (Yahoo Finance symbols)
+    nifty50_tickers = {
+        "NIFTYBEES (Default)": "NIFTYBEES.NS",
+        "Reliance Industries": "RELIANCE.NS",
+        "HDFC Bank": "HDFCBANK.NS",
+        "ICICI Bank": "ICICIBANK.NS",
+        "Infosys": "INFY.NS",
+        "TCS": "TCS.NS",
+        "Hindustan Unilever": "HINDUNILVR.NS",
+        "ITC": "ITC.NS",
+        "Kotak Mahindra Bank": "KOTAKBANK.NS",
+        "Axis Bank": "AXISBANK.NS",
+        "Larsen & Toubro": "LT.NS",
+        "SBI": "SBIN.NS",
+        "Bharti Airtel": "BHARTIARTL.NS",
+        "Bajaj Finance": "BAJFINANCE.NS",
+        "Asian Paints": "ASIANPAINT.NS",
+        "Maruti Suzuki": "MARUTI.NS",
+        "HCL Technologies": "HCLTECH.NS",
+        "Nestle India": "NESTLEIND.NS",
+        "UltraTech Cement": "ULTRACEMCO.NS",
+        "Sun Pharma": "SUNPHARMA.NS",
+        "Titan": "TITAN.NS",
+        "Power Grid": "POWERGRID.NS",
+        "NTPC": "NTPC.NS",
+        "JSW Steel": "JSWSTEEL.NS",
+        "Coal India": "COALINDIA.NS",
+        "Tata Motors": "TATAMOTORS.NS",
+        "Tata Steel": "TATASTEEL.NS",
+        "Adani Ports": "ADANIPORTS.NS",
+        "BPCL": "BPCL.NS",
+        "Tech Mahindra": "TECHM.NS",
+        "Eicher Motors": "EICHERMOT.NS",
+        "Wipro": "WIPRO.NS",
+        "Grasim": "GRASIM.NS",
+        "Britannia": "BRITANNIA.NS",
+        "HDFC Life": "HDFCLIFE.NS",
+        "Cipla": "CIPLA.NS",
+        "Apollo Hospitals": "APOLLOHOSP.NS",
+        "ONGC": "ONGC.NS",
+        "IndusInd Bank": "INDUSINDBK.NS",
+        "SBI Life": "SBILIFE.NS",
+        "UPL": "UPL.NS",
+        "Divi's Labs": "DIVISLAB.NS",
+        "Tata Consumer": "TATACONSUM.NS",
+        "Bajaj Auto": "BAJAJ-AUTO.NS",
+        "Hindalco": "HINDALCO.NS",
+        "Mahindra & Mahindra": "M&M.NS",
+        "Dr. Reddy's": "DRREDDY.NS",
+        "Adani Enterprises": "ADANIENT.NS",
+        "Hero MotoCorp": "HEROMOTOCO.NS",
+    }
+    selected_stock = st.selectbox("Select Stock (Nifty 50):", list(nifty50_tickers.keys()), index=0)
+    ticker = nifty50_tickers[selected_stock]
+    st.write(f"📈 Selected Stock: **{selected_stock}** ({ticker})")
     start_date = st.date_input("Start Date", pd.to_datetime("2023-01-01"))
     end_date = st.date_input("End Date", pd.to_datetime("today"))
 
