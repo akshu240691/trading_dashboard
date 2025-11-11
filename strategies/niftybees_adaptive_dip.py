@@ -197,7 +197,7 @@ def run():
 
     # xirr = calculate_xirr_from_data_v2(transactions_df)
     st.subheader("💰 Portfolio Summary")
-    col1, col2, col3, col4,col5 = st.columns(5)
+    col1, col2, col3, col4, col5 = st.columns([2, 2, 2, 2, 2])
     col1.metric("Total Invested", f"₹{total_invested:,.0f}")
     col2.metric("Current Value", f"₹{current_value:,.0f}")
     col3.metric("Profit / Loss", f"₹{profit:,.0f}")
