@@ -10,8 +10,10 @@ def run():
     st.header("📊 NiftyBees Adaptive Dip-Buy Strategy")
 
     st.write("""
-    This strategy invests dynamically based on the **magnitude of the daily dip** in NiftyBees.
-    Larger dips trigger higher investments automatically.
+    This strategy allocates capital dynamically based on the magnitude of daily dips in NiftyBees,
+     with larger declines triggering proportionally higher investments. A strict monthly cap of ₹50,000 
+     ensures disciplined deployment and prevents over-allocation. This adaptive dip-buying approach can
+      potentially offer better returns than a fixed single-day SIP by taking advantage of market volatility.
     """)
 
     # ----------------------------
@@ -114,106 +116,55 @@ def run():
         st.warning("No buy signals found in the given period.")
         return
 
+
     # ----------------------------
-    # Adaptive Investment Logic
+    # ✅ STRICT ₹50,000 MONTHLY CAP LOGIC
     # ----------------------------
     sorted_rules = sorted(
-        [(float(k.strip(">=% ").replace("%", "")), v) for k, v in rules.items()],
+        [(float(k.replace(">=", "").replace("%", "").strip()), v) for k, v in rules.items()],
         key=lambda x: x[0]
     )
-
-    # ----------------------------
-    # Adaptive Investment Logic (Fixed ₹50,000 monthly cap)
-    # ----------------------------
-    sorted_rules = sorted(
-        [(float(k.strip(">=% ").replace("%", "")), v) for k, v in rules.items()],
-        key=lambda x: x[0]
-    )
-
-    buy_days["Investment"] = 0.0
-    buy_days["Month"] = buy_days["Date"].dt.to_period("M")
-
-    # ----------------------------
-    # ✅ Adaptive Investment Logic with Strict ₹50,000 Monthly Cap (Final Safe Version)
-    # ----------------------------
-    sorted_rules = sorted(
-        [(float(k.strip(">=% ").replace("%", "")), v) for k, v in rules.items()],
-        key=lambda x: x[0]
-    )
-
-    buy_days["Investment"] = 0.0
-    buy_days["Month"] = buy_days["Date"].dt.to_period("M")
 
     monthly_cap = 50000
     monthly_invested = {}
     investments = []
 
-    # Sort buy_days by Date to maintain order
     buy_days = buy_days.sort_values("Date").reset_index(drop=True)
+    buy_days["Month"] = buy_days["Date"].dt.to_period("M").astype(str)
 
     for idx, row in buy_days.iterrows():
-        fall = abs(float(row["Change %"]))
-        month = str(row["Month"])  # store as string for dictionary key
-        already_invested = monthly_invested.get(month, 0)
+        fall = float(abs(row["Change %"]))
+        date_value = row["Date"]
+        if isinstance(date_value, pd.Series):
+            date_value = date_value.iloc[0]
+        month = pd.to_datetime(date_value).strftime("%Y-%m")
+        already = monthly_invested.get(month, 0)
 
-        # Determine base investment from dip %
-        investment = 0
+        base_invest = 0
         for pct, amt in sorted_rules:
             if fall >= pct:
-                investment = amt
+                base_invest = amt
 
-        # Strict cap enforcement
-        if already_invested + investment > monthly_cap:
-            investment = max(0, monthly_cap - already_invested)
+        remaining = monthly_cap - already
+        final_invest = min(base_invest, remaining)
 
-        # If cap already reached, skip
-        if already_invested >= monthly_cap:
-            investment = 0
+        if remaining <= 0:
+            final_invest = 0
 
-        monthly_invested[month] = already_invested + investment
-        investments.append(investment)
+        investments.append(final_invest)
+        monthly_invested[month] = already + final_invest
 
     buy_days["Investment"] = investments
 
-    # 🧩 Final strict correction for any overshoot (due to rounding or float error)
-    monthly_check = buy_days.groupby("Month")["Investment"].sum().reset_index()
+    inv = buy_days["Investment"]
+    if isinstance(inv, pd.DataFrame):
+        inv = inv.iloc[:, 0]
 
-    for _, row in monthly_check.iterrows():
-        m = str(row["Month"])  # convert to string for consistent comparison
-        total = row["Investment"]
-        if total > monthly_cap:
-            excess = total - monthly_cap
-            month_mask = buy_days["Month"].astype(str) == m
-            if month_mask.any():
-                # Extract the last index as a plain integer (not array)
-                last_idx = int(buy_days[month_mask].index[-1])
-                current_value = float(buy_days.loc[last_idx, "Investment"])
-                buy_days.loc[last_idx, "Investment"] = max(0, current_value - excess)
+    close = buy_days["Close"]
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]
 
-    # ✅ Ensure final cap compliance
-    buy_days["Investment"] = buy_days["Investment"].clip(lower=0).round(2)
-    monthly_check = buy_days.groupby("Month")["Investment"].sum().reset_index()
-
-    # Log summary and small drift message if needed
-    for _, row in monthly_check.iterrows():
-        print(f"Month: {row['Month']}, Total Invested: ₹{row['Investment']:.2f}")
-
-    if (monthly_check["Investment"] > monthly_cap + 1).any():
-        print("⚠️ Minor rounding drift detected but capped safely.")
-
-    # Ensure correct types
-    # Ensure both are 1D Series, not DataFrames
-    # --- Fix: ensure 1D Series before division ---
-    investment_series = buy_days["Investment"]
-    close_series = buy_days["Close"]
-
-    # If either accidentally became a DataFrame, flatten it
-    if isinstance(investment_series, pd.DataFrame):
-        investment_series = investment_series.iloc[:, 0]
-    if isinstance(close_series, pd.DataFrame):
-        close_series = close_series.iloc[:, 0]
-
-    buy_days["Units Bought"] = (investment_series.astype(float) / close_series.astype(float)).values
+    buy_days["Units Bought"] = inv.astype(float) / close.astype(float)
 
     # ----------------------------
     # Portfolio Calculation
