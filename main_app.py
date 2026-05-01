@@ -47,6 +47,7 @@ elif page == "📈 Strategies":
     strategy_modules = {
         name: importlib.import_module(f"strategies.{name}")
         for _, name, _ in pkgutil.iter_modules(["strategies"])
+        if name != "nifty_bees_dip_buy"
     }
 
     # Default selection (None)
