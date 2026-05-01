@@ -99,6 +99,8 @@ def run():
     # Fetch Data
     # ----------------------------
     df = yf.download(ticker, start=start_date, end=end_date)
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
     if df.empty:
         st.warning("⚠️ No data found for this ticker and date range.")
         return
